@@ -8,6 +8,8 @@ class UKTaxCalculator {
         this.loadFormData();
         this.setDefaultWeekStart();
         this.initializeStorage();
+        this.initializePWA();
+        this.startSyncTimer();
     }
 
     // Detect if we're in Safari (for iCloud Keychain support)
@@ -40,6 +42,105 @@ class UKTaxCalculator {
             indicator.className = 'storage-indicator local';
             text.textContent = 'Local Storage - Data stays on this device';
         }
+    }
+
+    // Initialize PWA functionality
+    async initializePWA() {
+        if ('serviceWorker' in navigator) {
+            try {
+                const registration = await navigator.serviceWorker.register('/sw.js');
+                console.log('Service Worker registered:', registration);
+                
+                // Check for updates
+                registration.addEventListener('updatefound', () => {
+                    const newWorker = registration.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            this.showUpdateNotification();
+                        }
+                    });
+                });
+            } catch (error) {
+                console.error('Service Worker registration failed:', error);
+            }
+        }
+    }
+
+    // Show update notification
+    showUpdateNotification() {
+        this.showToast('New version available! Refresh to update.', 'info');
+    }
+
+    // Start periodic sync timer
+    startSyncTimer() {
+        // Check for data updates every 30 seconds
+        setInterval(() => {
+            this.checkForDataUpdates();
+        }, 30000);
+        
+        // Also check when app becomes visible
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                this.checkForDataUpdates();
+            }
+        });
+    }
+
+    // Check for data updates from iCloud
+    checkForDataUpdates() {
+        if (this.useICloudKeychain) {
+            console.log('Checking for iCloud data updates...');
+            
+            // Get current data
+            const currentWeeks = this.getSavedWeeks();
+            const currentFormData = this.loadFromStorage('ukTaxFormData');
+            
+            // Check if data has changed (this is a simple timestamp check)
+            const lastCheck = localStorage.getItem('lastDataCheck') || '0';
+            const now = Date.now();
+            
+            // If it's been more than 5 minutes since last check, refresh data
+            if (now - parseInt(lastCheck) > 300000) {
+                console.log('Refreshing data from iCloud...');
+                this.refreshDataFromStorage();
+                localStorage.setItem('lastDataCheck', now.toString());
+            }
+        }
+    }
+
+    // Refresh data from storage (useful for iCloud sync)
+    refreshDataFromStorage() {
+        // Reload saved weeks
+        this.loadSavedWeeks();
+        
+        // Reload form data
+        this.loadFormData();
+        
+        // Update comparison table
+        this.updateComparisonTable();
+        
+        console.log('Data refreshed from storage');
+    }
+
+    // Manual refresh button handler
+    async manualRefresh() {
+        const refreshBtn = document.getElementById('refreshDataBtn');
+        if (refreshBtn) {
+            refreshBtn.classList.add('spinning');
+        }
+        
+        // Force refresh from storage
+        this.refreshDataFromStorage();
+        
+        // Show feedback
+        this.showToast('Data refreshed from iCloud', 'success');
+        
+        // Stop spinning after 1 second
+        setTimeout(() => {
+            if (refreshBtn) {
+                refreshBtn.classList.remove('spinning');
+            }
+        }, 1000);
     }
 
     // Hybrid storage methods
@@ -123,6 +224,12 @@ class UKTaxCalculator {
             this.updateWeekInfo();
             this.saveFormData();
         });
+        
+        // Refresh data button
+        const refreshBtn = document.getElementById('refreshDataBtn');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => this.manualRefresh());
+        }
     }
 
     // UK Tax Rates 2024/25
