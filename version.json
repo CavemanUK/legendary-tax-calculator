@@ -1,0 +1,13 @@
+{
+  "version": "1.0.0",
+  "build": "2024.12.08.001",
+  "date": "2024-12-08",
+  "features": [
+    "UK Tax Calculator with 2024/25 rates",
+    "iCloud Keychain sync support",
+    "PWA with home screen installation",
+    "Clickable comparison table",
+    "Payday sorting",
+    "Cross-device data sync"
+  ]
+}

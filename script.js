@@ -9,6 +9,7 @@ class UKTaxCalculator {
         this.initializeStorage();
         this.initializePWA();
         this.startSyncTimer();
+        this.loadVersionInfo();
     }
 
     // Detect if we're in Safari (for iCloud Keychain support)
@@ -156,6 +157,26 @@ class UKTaxCalculator {
                 refreshBtn.classList.remove('spinning');
             }
         }, 1000);
+    }
+
+    // Load and display version information
+    async loadVersionInfo() {
+        try {
+            const response = await fetch('version.json');
+            const versionData = await response.json();
+            
+            const versionText = document.getElementById('version-text');
+            if (versionText) {
+                versionText.textContent = `v${versionData.version} (${versionData.build})`;
+                versionText.title = `Build: ${versionData.build}\nDate: ${versionData.date}\nFeatures: ${versionData.features.join(', ')}`;
+            }
+        } catch (error) {
+            console.log('Could not load version info:', error);
+            const versionText = document.getElementById('version-text');
+            if (versionText) {
+                versionText.textContent = 'v1.0.0';
+            }
+        }
     }
 
     // Hybrid storage methods
