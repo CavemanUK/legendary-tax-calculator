@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
-  "build": "2024.12.08.001",
-  "date": "2024-12-08",
+  "build": "2025.08.09.0052",
+  "date": "2025-08-09",
   "features": [
     "UK Tax Calculator with 2024/25 rates",
     "iCloud Keychain sync support",
