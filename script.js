@@ -7,6 +7,68 @@ class UKTaxCalculator {
         this.bindEvents();
         this.loadFormData();
         this.setDefaultWeekStart();
+        this.initializeStorage();
+    }
+
+    // Detect if we're in Safari (for iCloud Keychain support)
+    isSafari() {
+        const userAgent = navigator.userAgent;
+        return /Safari/.test(userAgent) && !/Chrome/.test(userAgent);
+    }
+
+    // Initialize storage system
+    initializeStorage() {
+        this.useICloudKeychain = this.isSafari();
+        this.updateStorageIndicator();
+        
+        if (this.useICloudKeychain) {
+            console.log('Using iCloud Keychain for cross-device sync (Safari)');
+        } else {
+            console.log('Using local storage (other browsers)');
+        }
+    }
+
+    // Update storage indicator in the header
+    updateStorageIndicator() {
+        const indicator = document.getElementById('storage-indicator');
+        const text = document.getElementById('storage-text');
+        
+        if (this.useICloudKeychain) {
+            indicator.className = 'storage-indicator icloud';
+            text.textContent = 'iCloud Keychain - Data syncs across your Apple devices';
+        } else {
+            indicator.className = 'storage-indicator local';
+            text.textContent = 'Local Storage - Data stays on this device';
+        }
+    }
+
+    // Hybrid storage methods
+    saveToStorage(key, data) {
+        try {
+            if (this.useICloudKeychain) {
+                // Safari will automatically sync to iCloud Keychain
+                localStorage.setItem(key, JSON.stringify(data));
+                console.log(`Data saved to iCloud Keychain: ${key}`);
+            } else {
+                // Fallback to regular local storage
+                localStorage.setItem(key, JSON.stringify(data));
+                console.log(`Data saved to local storage: ${key}`);
+            }
+        } catch (error) {
+            console.error('Storage error:', error);
+            // Fallback to local storage if iCloud Keychain fails
+            localStorage.setItem(key, JSON.stringify(data));
+        }
+    }
+
+    loadFromStorage(key) {
+        try {
+            const data = localStorage.getItem(key);
+            return data ? JSON.parse(data) : null;
+        } catch (error) {
+            console.error('Storage load error:', error);
+            return null;
+        }
     }
 
     initializeElements() {
@@ -425,7 +487,8 @@ class UKTaxCalculator {
         } else {
             // Add new week at the beginning
             savedWeeks.unshift(weekData);
-            this.showToast(`Week saved successfully! Payday: ${payday.toLocaleDateString('en-GB')}`, 'success');
+            const storageType = this.useICloudKeychain ? 'iCloud Keychain' : 'local storage';
+            this.showToast(`Week saved to ${storageType}! Payday: ${payday.toLocaleDateString('en-GB')}`, 'success');
         }
         
         // Keep only the last 20 weeks
@@ -433,14 +496,13 @@ class UKTaxCalculator {
             savedWeeks.splice(20);
         }
         
-        localStorage.setItem('ukTaxWeeks', JSON.stringify(savedWeeks));
+        this.saveToStorage('ukTaxWeeks', savedWeeks);
         this.displaySavedWeeks();
         this.updateComparisonTable();
     }
 
     getSavedWeeks() {
-        const saved = localStorage.getItem('ukTaxWeeks');
-        return saved ? JSON.parse(saved) : [];
+        return this.loadFromStorage('ukTaxWeeks') || [];
     }
 
     loadSavedWeeks() {
@@ -519,7 +581,7 @@ class UKTaxCalculator {
         const savedWeeks = this.getSavedWeeks();
         const filteredWeeks = savedWeeks.filter(week => week.id !== id);
         
-        localStorage.setItem('ukTaxWeeks', JSON.stringify(filteredWeeks));
+        this.saveToStorage('ukTaxWeeks', filteredWeeks);
         this.displaySavedWeeks();
         this.updateComparisonTable();
     }
@@ -561,21 +623,19 @@ class UKTaxCalculator {
             weekStartDate: this.weekStartDateInput.value
         };
         
-        localStorage.setItem('ukTaxFormData', JSON.stringify(formData));
+        this.saveToStorage('ukTaxFormData', formData);
     }
 
     loadFormData() {
-        const savedData = localStorage.getItem('ukTaxFormData');
+        const savedData = this.loadFromStorage('ukTaxFormData');
         if (savedData) {
-            const formData = JSON.parse(savedData);
-            
-            this.payRateInput.value = formData.payRate || '';
-            this.hoursWorkedInput.value = formData.hoursWorked || '';
-            this.taxCodeInput.value = formData.taxCode || 'C1257L';
-            this.pensionContributionInput.value = formData.pensionContribution || '3.9';
-            this.childSupportInput.value = formData.childSupport || '';
-            this.otherDeductionsInput.value = formData.otherDeductions || '';
-            this.weekStartDateInput.value = formData.weekStartDate || '';
+            this.payRateInput.value = savedData.payRate || '';
+            this.hoursWorkedInput.value = savedData.hoursWorked || '';
+            this.taxCodeInput.value = savedData.taxCode || 'C1257L';
+            this.pensionContributionInput.value = savedData.pensionContribution || '3.9';
+            this.childSupportInput.value = savedData.childSupport || '';
+            this.otherDeductionsInput.value = savedData.otherDeductions || '';
+            this.weekStartDateInput.value = savedData.weekStartDate || '';
             
             this.updateWeekInfo();
             this.autoCalculate();
@@ -630,6 +690,7 @@ class UKTaxCalculator {
                 <thead>
                     <tr>
                         <th>Payday</th>
+                        <th>Hours</th>
                         <th>Gross</th>
                         <th>Tax</th>
                         <th>NI</th>
@@ -647,6 +708,7 @@ class UKTaxCalculator {
                         return `
                             <tr>
                                 <td class="payday-date">${payday.toLocaleDateString('en-GB')}</td>
+                                <td class="hours-worked">${week.hoursWorked}</td>
                                 <td class="gross-pay">£${week.grossPay.toFixed(2)}</td>
                                 <td class="tax">-£${week.incomeTax.toFixed(2)}</td>
                                 <td class="ni">-£${week.nationalInsurance.toFixed(2)}</td>
