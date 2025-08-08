@@ -539,6 +539,26 @@ body {
     font-weight: 700;
 }
 
+.comparison-table .comparison-row {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.comparison-table .comparison-row:hover {
+    background: rgba(139, 92, 246, 0.15);
+}
+
+.comparison-table .actions {
+    text-align: center;
+    padding: 8px 4px;
+}
+
+.comparison-table .btn-sm {
+    padding: 4px 8px;
+    font-size: 0.8rem;
+    border-radius: 6px;
+}
+
 /* Toast Notifications */
 .toast {
     position: fixed;

@@ -13,8 +13,12 @@
     <meta name="apple-mobile-web-app-title" content="TaxCalc">
     
     <!-- PWA Icons -->
-    <link rel="icon" type="image/svg+xml" href="icon-192.svg">
-    <link rel="apple-touch-icon" href="icon.svg">
+    <link rel="icon" type="image/svg+xml" href="icon-32.svg">
+    <link rel="icon" type="image/svg+xml" sizes="32x32" href="icon-32.svg">
+    <link rel="icon" type="image/svg+xml" sizes="192x192" href="icon-192.svg">
+    <link rel="apple-touch-icon" sizes="180x180" href="icon-180.svg">
+    <link rel="apple-touch-icon" sizes="192x192" href="icon-192.svg">
+    <link rel="apple-touch-icon" sizes="512x512" href="icon.svg">
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -43,9 +47,6 @@
             <div class="tab-navigation">
                 <button class="tab-btn active" data-tab="calculator">
                     <i class="fas fa-calculator"></i> Calculator
-                </button>
-                <button class="tab-btn" data-tab="history">
-                    <i class="fas fa-history"></i> History
                 </button>
                 <button class="tab-btn" data-tab="comparison">
                     <i class="fas fa-table"></i> Comparison
@@ -124,20 +125,7 @@
                 </div>
             </div>
 
-            <!-- History Tab -->
-            <div class="tab-content" id="history-tab">
-                <div class="history-section">
-                    <div class="card">
-                        <h2><i class="fas fa-history"></i> Saved Weeks</h2>
-                        <div id="savedWeeks" class="saved-weeks">
-                            <div class="placeholder">
-                                <i class="fas fa-calendar-alt"></i>
-                                <p>No saved weeks yet</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+
 
             <!-- Comparison Tab -->
             <div class="tab-content" id="comparison-tab">

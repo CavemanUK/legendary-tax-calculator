@@ -122,6 +122,22 @@ class UKTaxCalculator {
         console.log('Data refreshed from storage');
     }
 
+    // Add click handlers for comparison table rows
+    addComparisonRowHandlers() {
+        const rows = document.querySelectorAll('.comparison-row');
+        rows.forEach(row => {
+            row.addEventListener('click', (e) => {
+                // Don't trigger if clicking on delete button
+                if (e.target.closest('.btn-danger')) {
+                    return;
+                }
+                
+                const weekId = row.dataset.weekId;
+                this.loadWeek(weekId);
+            });
+        });
+    }
+
     // Manual refresh button handler
     async manualRefresh() {
         const refreshBtn = document.getElementById('refreshDataBtn');
@@ -813,6 +829,7 @@ class UKTaxCalculator {
                         <th>Other</th>
                         <th>Total Ded.</th>
                         <th>Net</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -821,7 +838,7 @@ class UKTaxCalculator {
                         const otherDeductions = week.childSupport + week.otherDeductions;
                         const totalDeductions = week.incomeTax + week.nationalInsurance + week.pension + otherDeductions;
                         return `
-                            <tr>
+                            <tr class="comparison-row" data-week-id="${week.id}">
                                 <td class="payday-date">${payday.toLocaleDateString('en-GB')}</td>
                                 <td class="hours-worked">${week.hoursWorked}</td>
                                 <td class="gross-pay">£${week.grossPay.toFixed(2)}</td>
@@ -831,6 +848,11 @@ class UKTaxCalculator {
                                 <td class="deductions">-£${otherDeductions.toFixed(2)}</td>
                                 <td class="total-deductions">-£${totalDeductions.toFixed(2)}</td>
                                 <td class="net-pay">£${week.netPay.toFixed(2)}</td>
+                                <td class="actions">
+                                    <button class="btn btn-danger btn-sm" onclick="taxCalculator.deleteWeek('${week.id}')" title="Delete week">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
                             </tr>
                         `;
                     }).join('')}
@@ -839,6 +861,9 @@ class UKTaxCalculator {
         `;
         
         comparisonTableDiv.innerHTML = tableHTML;
+        
+        // Add click handlers for row editing
+        this.addComparisonRowHandlers();
     }
 
     showToast(message, type = 'info') {
