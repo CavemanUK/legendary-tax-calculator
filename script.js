@@ -3,7 +3,6 @@
 class UKTaxCalculator {
     constructor() {
         this.initializeElements();
-        this.loadSavedWeeks();
         this.bindEvents();
         this.loadFormData();
         this.setDefaultWeekStart();
@@ -209,7 +208,6 @@ class UKTaxCalculator {
 
         // Output elements
         this.resultsDiv = document.getElementById('results');
-        this.savedWeeksDiv = document.getElementById('savedWeeks');
         this.payPeriodInfo = document.getElementById('payPeriodInfo');
         this.paydayInfo = document.getElementById('paydayInfo');
     }
@@ -628,7 +626,6 @@ class UKTaxCalculator {
         }
         
         this.saveToStorage('ukTaxWeeks', savedWeeks);
-        this.displaySavedWeeks();
         this.updateComparisonTable();
     }
 
@@ -636,50 +633,7 @@ class UKTaxCalculator {
         return this.loadFromStorage('ukTaxWeeks') || [];
     }
 
-    loadSavedWeeks() {
-        this.displaySavedWeeks();
-    }
 
-    displaySavedWeeks() {
-        const savedWeeks = this.getSavedWeeks();
-        
-        if (savedWeeks.length === 0) {
-            this.savedWeeksDiv.innerHTML = `
-                <div class="placeholder">
-                    <i class="fas fa-calendar-alt"></i>
-                    <p>No saved weeks yet</p>
-                </div>
-            `;
-            return;
-        }
-
-        const weeksHTML = savedWeeks.map(week => {
-            const weekStart = new Date(week.weekStart);
-            const payday = new Date(week.payday);
-            
-            return `
-                <div class="saved-week fade-in">
-                    <div class="saved-week-header">
-                        <span class="saved-week-title">Week of ${weekStart.toLocaleDateString('en-GB')}</span>
-                        <span class="saved-week-date">Payday: ${payday.toLocaleDateString('en-GB')}</span>
-                    </div>
-                    <div class="saved-week-details">
-                        £${week.payRate}/hr × ${week.hoursWorked}hrs | Net: £${week.netPay.toFixed(2)} | Gross: £${week.grossPay.toFixed(2)}
-                    </div>
-                    <div class="saved-week-actions">
-                        <button class="btn btn-secondary" onclick="taxCalculator.loadWeek('${week.id}')">
-                            <i class="fas fa-edit"></i> Load
-                        </button>
-                        <button class="btn btn-danger" onclick="taxCalculator.deleteWeek('${week.id}')">
-                            <i class="fas fa-trash"></i> Delete
-                        </button>
-                    </div>
-                </div>
-            `;
-        }).join('');
-
-        this.savedWeeksDiv.innerHTML = weeksHTML;
-    }
 
     loadWeek(id) {
         const savedWeeks = this.getSavedWeeks();
@@ -713,7 +667,6 @@ class UKTaxCalculator {
         const filteredWeeks = savedWeeks.filter(week => week.id !== id);
         
         this.saveToStorage('ukTaxWeeks', filteredWeeks);
-        this.displaySavedWeeks();
         this.updateComparisonTable();
     }
 
@@ -816,6 +769,13 @@ class UKTaxCalculator {
             return;
         }
         
+        // Sort weeks by payday date (newest first)
+        const sortedWeeks = savedWeeks.sort((a, b) => {
+            const dateA = new Date(a.payday);
+            const dateB = new Date(b.payday);
+            return dateB - dateA; // Descending order (newest first)
+        });
+        
         const tableHTML = `
             <table>
                 <thead>
@@ -833,7 +793,7 @@ class UKTaxCalculator {
                     </tr>
                 </thead>
                 <tbody>
-                    ${savedWeeks.map(week => {
+                    ${sortedWeeks.map(week => {
                         const payday = new Date(week.payday);
                         const otherDeductions = week.childSupport + week.otherDeductions;
                         const totalDeductions = week.incomeTax + week.nationalInsurance + week.pension + otherDeductions;
