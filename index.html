@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legendary Tax Calculator</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-content">
+                <h1><i class="fas fa-crown"></i> Legendary Tax Calculator</h1>
+                <p>Calculate your take-home pay with precision and style</p>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- Tab Navigation -->
+            <div class="tab-navigation">
+                <button class="tab-btn active" data-tab="calculator">
+                    <i class="fas fa-calculator"></i> Calculator
+                </button>
+                <button class="tab-btn" data-tab="history">
+                    <i class="fas fa-history"></i> History
+                </button>
+                <button class="tab-btn" data-tab="comparison">
+                    <i class="fas fa-table"></i> Comparison
+                </button>
+            </div>
+
+            <!-- Calculator Tab -->
+            <div class="tab-content active" id="calculator-tab">
+                <div class="calculator-form">
+                    <div class="card">
+                        <h2><i class="fas fa-calculator"></i> Weekly Pay Calculator</h2>
+                        
+                        <!-- Week Selection -->
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="weekStartDate">Week Start Date (Monday)</label>
+                                <input type="date" id="weekStartDate">
+                                <div class="week-info-small">
+                                    <span id="payPeriodInfo">Select a week start date</span> • Payday: <span id="paydayInfo">-</span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="taxCode">Tax Code</label>
+                                <input type="text" id="taxCode" placeholder="C1257L" value="C1257L">
+                            </div>
+                        </div>
+
+                        <!-- Income Details -->
+                        <div class="form-section">
+                            <h2><i class="fas fa-money-bill-wave"></i> Income Details</h2>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="payRate">Hourly Rate (£)</label>
+                                    <input type="number" id="payRate" step="0.01" placeholder="12.50">
+                                </div>
+                                <div class="form-group">
+                                    <label for="hoursWorked">Hours Worked</label>
+                                    <input type="number" id="hoursWorked" step="0.5" placeholder="40">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Deductions -->
+                        <div class="form-section">
+                            <h2><i class="fas fa-minus-circle"></i> Deductions</h2>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="pensionContribution">Pension (%)</label>
+                                    <input type="number" id="pensionContribution" step="0.1" placeholder="3.9" value="3.9">
+                                </div>
+                                <div class="form-group">
+                                    <label for="childSupport">Child Support (£)</label>
+                                    <input type="number" id="childSupport" step="0.01" placeholder="0.00">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="otherDeductions">Other Deductions (£)</label>
+                                <input type="number" id="otherDeductions" step="0.01" placeholder="0.00">
+                            </div>
+                        </div>
+
+                        <!-- Results and Save -->
+                        <div class="results-section">
+                            <h2><i class="fas fa-chart-pie"></i> Breakdown</h2>
+                            <div id="results" class="results-content">
+                                <div class="placeholder">
+                                    <i class="fas fa-calculator"></i>
+                                    <p>Enter your details to see your breakdown</p>
+                                </div>
+                            </div>
+                            <button id="saveWeekBtn" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Week
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History Tab -->
+            <div class="tab-content" id="history-tab">
+                <div class="history-section">
+                    <div class="card">
+                        <h2><i class="fas fa-history"></i> Saved Weeks</h2>
+                        <div id="savedWeeks" class="saved-weeks">
+                            <div class="placeholder">
+                                <i class="fas fa-calendar-alt"></i>
+                                <p>No saved weeks yet</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comparison Tab -->
+            <div class="tab-content" id="comparison-tab">
+                <div class="comparison-section">
+                    <div class="card">
+                        <h2><i class="fas fa-table"></i> Week Comparison</h2>
+                        <div id="comparisonTable" class="comparison-table">
+                            <div class="placeholder">
+                                <i class="fas fa-table"></i>
+                                <p>No data to compare yet</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
