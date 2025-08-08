@@ -1,0 +1,74 @@
+<svg width="192" height="192" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background with gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0f0f23;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="calculatorGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e2e8f0;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="96" cy="96" r="90" fill="url(#bgGradient)" stroke="#8b5cf6" stroke-width="3"/>
+  
+  <!-- Calculator body -->
+  <rect x="45" y="52" width="102" height="87" rx="6" fill="url(#calculatorGradient)" stroke="#8b5cf6" stroke-width="1.5"/>
+  
+  <!-- Calculator screen -->
+  <rect x="52" y="60" width="87" height="22" rx="4" fill="#0f0f23" stroke="#8b5cf6" stroke-width="1"/>
+  
+  <!-- Screen display -->
+  <rect x="56" y="64" width="79" height="14" rx="2" fill="#1a1a2e"/>
+  <text x="130" y="74" font-family="Arial, sans-serif" font-size="9" font-weight="bold" text-anchor="end" fill="#8b5cf6">£1,234</text>
+  
+  <!-- Calculator buttons (simplified) -->
+  <!-- Row 1 -->
+  <rect x="52" y="90" width="19" height="15" rx="3" fill="#8b5cf6" stroke="#6d28d9" stroke-width="0.5"/>
+  <text x="61.5" y="100" font-family="Arial, sans-serif" font-size="6" font-weight="bold" text-anchor="middle" fill="white">7</text>
+  
+  <rect x="75" y="90" width="19" height="15" rx="3" fill="#8b5cf6" stroke="#6d28d9" stroke-width="0.5"/>
+  <text x="84.5" y="100" font-family="Arial, sans-serif" font-size="6" font-weight="bold" text-anchor="middle" fill="white">8</text>
+  
+  <rect x="98" y="90" width="19" height="15" rx="3" fill="#8b5cf6" stroke="#6d28d9" stroke-width="0.5"/>
+  <text x="107.5" y="100" font-family="Arial, sans-serif" font-size="6" font-weight="bold" text-anchor="middle" fill="white">9</text>
+  
+  <rect x="121" y="90" width="19" height="15" rx="3" fill="#ef4444" stroke="#dc2626" stroke-width="0.5"/>
+  <text x="130.5" y="100" font-family="Arial, sans-serif" font-size="6" font-weight="bold" text-anchor="middle" fill="white">÷</text>
+  
+  <!-- Row 2 -->
+  <rect x="52" y="109" width="19" height="15" rx="3" fill="#8b5cf6" stroke="#6d28d9" stroke-width="0.5"/>
+  <text x="61.5" y="119" font-family="Arial, sans-serif" font-size="6" font-weight="bold" text-anchor="middle" fill="white">4</text>
+  
+  <rect x="75" y="109" width="19" height="15" rx="3" fill="#8b5cf6" stroke="#6d28d9" stroke-width="0.5"/>
+  <text x="84.5" y="119" font-family="Arial, sans-serif" font-size="6" font-weight="bold" text-anchor="middle" fill="white">5</text>
+  
+  <rect x="98" y="109" width="19" height="15" rx="3" fill="#8b5cf6" stroke="#6d28d9" stroke-width="0.5"/>
+  <text x="107.5" y="119" font-family="Arial, sans-serif" font-size="6" font-weight="bold" text-anchor="middle" fill="white">6</text>
+  
+  <rect x="121" y="109" width="19" height="15" rx="3" fill="#f59e0b" stroke="#d97706" stroke-width="0.5"/>
+  <text x="130.5" y="119" font-family="Arial, sans-serif" font-size="6" font-weight="bold" text-anchor="middle" fill="white">×</text>
+  
+  <!-- Row 3 -->
+  <rect x="52" y="128" width="19" height="15" rx="3" fill="#8b5cf6" stroke="#6d28d9" stroke-width="0.5"/>
+  <text x="61.5" y="138" font-family="Arial, sans-serif" font-size="6" font-weight="bold" text-anchor="middle" fill="white">1</text>
+  
+  <rect x="75" y="128" width="19" height="15" rx="3" fill="#8b5cf6" stroke="#6d28d9" stroke-width="0.5"/>
+  <text x="84.5" y="138" font-family="Arial, sans-serif" font-size="6" font-weight="bold" text-anchor="middle" fill="white">2</text>
+  
+  <rect x="98" y="128" width="19" height="15" rx="3" fill="#8b5cf6" stroke="#6d28d9" stroke-width="0.5"/>
+  <text x="107.5" y="138" font-family="Arial, sans-serif" font-size="6" font-weight="bold" text-anchor="middle" fill="white">3</text>
+  
+  <rect x="121" y="128" width="19" height="15" rx="3" fill="#10b981" stroke="#059669" stroke-width="0.5"/>
+  <text x="130.5" y="138" font-family="Arial, sans-serif" font-size="6" font-weight="bold" text-anchor="middle" fill="white">-</text>
+  
+  <!-- Crown icon in top right -->
+  <g transform="translate(150, 30)">
+    <path d="M0 7.5 L3.75 0 L7.5 7.5 L11.25 0 L15 7.5 L13.125 9.375 L11.25 7.5 L7.5 11.25 L3.75 7.5 L1.875 9.375 Z" fill="#fbbf24" stroke="#f59e0b" stroke-width="0.5"/>
+    <circle cx="7.5" cy="5.625" r="1.125" fill="#fbbf24"/>
+    <circle cx="3.75" cy="3.75" r="0.75" fill="#fbbf24"/>
+    <circle cx="11.25" cy="3.75" r="0.75" fill="#fbbf24"/>
+  </g>
+</svg>
