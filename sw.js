@@ -1,11 +1,11 @@
 // Service Worker for Legendary Tax Calculator
 const CACHE_NAME = 'tax-calculator-v1';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/styles.css',
-  '/script.js',
-  '/manifest.json'
+  './',
+  './index.html',
+  './styles.css',
+  './script.js',
+  './manifest.json'
 ];
 
 // Install event - cache resources

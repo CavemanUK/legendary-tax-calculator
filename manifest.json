@@ -2,7 +2,7 @@
   "name": "Legendary Tax Calculator",
   "short_name": "TaxCalc",
   "description": "UK Tax Calculator with cross-device sync",
-  "start_url": "/",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#0f0f23",
   "theme_color": "#8b5cf6",
