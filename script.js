@@ -49,6 +49,9 @@ class UKTaxCalculator {
                 // Safari will automatically sync to iCloud Keychain
                 localStorage.setItem(key, JSON.stringify(data));
                 console.log(`Data saved to iCloud Keychain: ${key}`);
+                console.log(`Data size: ${JSON.stringify(data).length} characters`);
+                console.log(`Safari detected: ${this.isSafari()}`);
+                console.log(`User agent: ${navigator.userAgent}`);
             } else {
                 // Fallback to regular local storage
                 localStorage.setItem(key, JSON.stringify(data));
@@ -64,6 +67,11 @@ class UKTaxCalculator {
     loadFromStorage(key) {
         try {
             const data = localStorage.getItem(key);
+            console.log(`Loading data for key: ${key}`);
+            console.log(`Data found: ${data ? 'Yes' : 'No'}`);
+            if (data) {
+                console.log(`Data size: ${data.length} characters`);
+            }
             return data ? JSON.parse(data) : null;
         } catch (error) {
             console.error('Storage load error:', error);
