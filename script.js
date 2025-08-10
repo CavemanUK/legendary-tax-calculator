@@ -925,19 +925,27 @@ class UKTaxCalculator {
                 <tbody>
                     ${sortedWeeks.map(week => {
                         const payday = new Date(week.payday);
+                        
+                        // Recalculate all values using current HMRC rates
+                        const grossPay = week.payRate * week.hoursWorked;
+                        const incomeTax = this.calculateIncomeTax(grossPay, week.taxCode, 'weekly');
+                        const nationalInsurance = this.calculateNI(grossPay, 'weekly');
+                        const pension = this.calculatePension(grossPay, week.pensionContribution);
                         const otherDeductions = week.childSupport + week.otherDeductions;
-                        const totalDeductions = week.incomeTax + week.nationalInsurance + week.pension + otherDeductions;
+                        const totalDeductions = incomeTax + nationalInsurance + pension + otherDeductions;
+                        const netPay = grossPay - totalDeductions;
+                        
                         return `
                             <tr class="comparison-row" data-week-id="${week.id}">
                                 <td class="payday-date">${payday.toLocaleDateString('en-GB')}</td>
                                 <td class="hours-worked">${week.hoursWorked}</td>
-                                <td class="gross-pay">£${week.grossPay.toFixed(2)}</td>
-                                <td class="tax">-£${week.incomeTax.toFixed(2)}</td>
-                                <td class="ni">-£${week.nationalInsurance.toFixed(2)}</td>
-                                <td class="pension">-£${week.pension.toFixed(2)}</td>
+                                <td class="gross-pay">£${grossPay.toFixed(2)}</td>
+                                <td class="tax">-£${incomeTax.toFixed(2)}</td>
+                                <td class="ni">-£${nationalInsurance.toFixed(2)}</td>
+                                <td class="pension">-£${pension.toFixed(2)}</td>
                                 <td class="deductions">-£${otherDeductions.toFixed(2)}</td>
                                 <td class="total-deductions">-£${totalDeductions.toFixed(2)}</td>
-                                <td class="net-pay">£${week.netPay.toFixed(2)}</td>
+                                <td class="net-pay">£${netPay.toFixed(2)}</td>
                                 <td class="actions">
                                     <button class="btn btn-danger btn-sm" onclick="taxCalculator.deleteWeek('${week.id}')" title="Delete week">
                                         <i class="fas fa-trash"></i>
