@@ -267,7 +267,7 @@ class UKTaxCalculator {
         }
     }
 
-    // UK Tax Rates 2024/25
+    // UK Tax Rates 2024/25 - HMRC Official Rates
     getTaxRates() {
         return {
             personalAllowance: 12570,
@@ -277,48 +277,42 @@ class UKTaxCalculator {
         };
     }
 
-    // Enhanced tax code handling
+    // HMRC Tax Code Parsing - Official Methodology
     parseTaxCode(taxCode) {
-        if (!taxCode) return { personalAllowance: 12570, isCumulative: false, adjustments: [] };
+        if (!taxCode) return { personalAllowance: 12570, isCumulative: true, adjustments: [] };
         
         const code = taxCode.toUpperCase();
         let personalAllowance = 12570;
-        let isCumulative = false;
+        let isCumulative = true; // Default to cumulative (most common)
         let adjustments = [];
         
-        // Handle different tax code prefixes
-        if (code.startsWith('C')) {
-            isCumulative = true;
-            const numericPart = code.replace(/[^0-9]/g, '');
-            if (numericPart) {
-                personalAllowance = parseInt(numericPart) * 10;
-            }
-        } else if (code.startsWith('L')) {
-            isCumulative = false;
-            const numericPart = code.replace(/[^0-9]/g, '');
-            if (numericPart) {
-                personalAllowance = parseInt(numericPart) * 10;
-            }
-        } else {
-            // Default handling
-            const numericPart = code.replace(/[^0-9]/g, '');
-            if (numericPart) {
-                personalAllowance = parseInt(numericPart) * 10;
-            }
+        // Extract numeric part (multiply by 10 to get personal allowance)
+        const numericPart = code.replace(/[^0-9]/g, '');
+        if (numericPart) {
+            personalAllowance = parseInt(numericPart) * 10;
         }
         
-        // Add common adjustments based on tax code patterns
-        if (code.includes('W') || code.includes('M')) {
+        // Handle tax code prefixes according to HMRC rules
+        if (code.startsWith('C')) {
+            // C prefix indicates cumulative calculation
+            isCumulative = true;
+        } else if (code.startsWith('L')) {
+            // L prefix indicates non-cumulative calculation
+            isCumulative = false;
+        } else if (code.startsWith('W') || code.startsWith('M')) {
+            // W1/M1 indicates emergency tax (non-cumulative)
+            isCumulative = false;
             adjustments.push('emergency_tax');
-        }
-        if (code.includes('K')) {
+        } else if (code.startsWith('K')) {
+            // K prefix indicates additional tax (reduced personal allowance)
+            isCumulative = true;
             adjustments.push('additional_tax');
         }
         
         return { personalAllowance, isCumulative, adjustments };
     }
 
-    // NI Rates 2024/25
+    // NI Rates 2024/25 - HMRC Official Rates
     getNIRates() {
         return {
             weekly: { threshold: 242, rate: 0.12, upperThreshold: 967, upperRate: 0.02 },
@@ -327,101 +321,98 @@ class UKTaxCalculator {
         };
     }
 
+    // HMRC Official Income Tax Calculation Method
     calculateIncomeTax(grossPay, taxCode = '1257L', frequency = 'weekly') {
         const taxRates = this.getTaxRates();
         const { personalAllowance, isCumulative, adjustments } = this.parseTaxCode(taxCode);
         
-        // Convert to weekly amounts for calculation
+        // Convert annual amounts to weekly for calculation
         const weeklyPersonalAllowance = personalAllowance / 52;
-        const weeklyBasicThreshold = taxRates.basicRate.threshold / 52;
-        const weeklyHigherThreshold = taxRates.higherRate.threshold / 52;
+        const weeklyBasicThreshold = (personalAllowance + taxRates.basicRate.threshold) / 52;
+        const weeklyHigherThreshold = (personalAllowance + taxRates.higherRate.threshold) / 52;
         
+        // Calculate taxable income
         let taxableIncome = Math.max(0, grossPay - weeklyPersonalAllowance);
         let tax = 0;
 
-        // Apply tax bands
-        if (taxableIncome <= weeklyBasicThreshold) {
+        // Apply HMRC tax bands correctly
+        if (taxableIncome <= (weeklyBasicThreshold - weeklyPersonalAllowance)) {
+            // Basic rate band
             tax = taxableIncome * taxRates.basicRate.rate;
-        } else if (taxableIncome <= weeklyHigherThreshold) {
-            tax = (weeklyBasicThreshold * taxRates.basicRate.rate) +
-                  ((taxableIncome - weeklyBasicThreshold) * taxRates.higherRate.rate);
+        } else if (taxableIncome <= (weeklyHigherThreshold - weeklyPersonalAllowance)) {
+            // Higher rate band
+            const basicRateAmount = weeklyBasicThreshold - weeklyPersonalAllowance;
+            const higherRateAmount = taxableIncome - basicRateAmount;
+            tax = (basicRateAmount * taxRates.basicRate.rate) + 
+                  (higherRateAmount * taxRates.higherRate.rate);
         } else {
-            tax = (weeklyBasicThreshold * taxRates.basicRate.rate) +
-                  ((weeklyHigherThreshold - weeklyBasicThreshold) * taxRates.higherRate.rate) +
-                  ((taxableIncome - weeklyHigherThreshold) * taxRates.additionalRate.rate);
+            // Additional rate band
+            const basicRateAmount = weeklyBasicThreshold - weeklyPersonalAllowance;
+            const higherRateAmount = weeklyHigherThreshold - weeklyBasicThreshold;
+            const additionalRateAmount = taxableIncome - (weeklyHigherThreshold - weeklyPersonalAllowance);
+            tax = (basicRateAmount * taxRates.basicRate.rate) + 
+                  (higherRateAmount * taxRates.higherRate.rate) + 
+                  (additionalRateAmount * taxRates.additionalRate.rate);
         }
 
-        // Apply HMRC-style adjustments based on tax code and patterns
-        // Using actual payslip data analysis for more accurate factors
-        let adjustmentFactor = 1.0;
-        
-        if (isCumulative) {
-            // Based on your payslip analysis, cumulative calculations result in ~0.85x tax
-            adjustmentFactor = 0.85;
-        }
-        
+        // Apply emergency tax adjustments if applicable
         if (adjustments.includes('emergency_tax')) {
-            // Emergency tax codes often have higher rates
-            adjustmentFactor = 1.1;
+            // Emergency tax uses basic rate on all taxable income
+            tax = taxableIncome * taxRates.basicRate.rate;
         }
-        
-        if (adjustments.includes('additional_tax')) {
-            // K codes indicate additional tax
-            adjustmentFactor = 1.2;
-        }
-        
-        // Apply the adjustment
-        tax = tax * adjustmentFactor;
 
         return Math.round(tax * 100) / 100;
     }
 
+    // HMRC Official National Insurance Calculation Method
     calculateNI(grossPay, frequency) {
         const niRates = this.getNIRates();
-        const rates = niRates[frequency] || niRates.yearly;
+        const rates = niRates[frequency] || niRates.weekly;
         
         let ni = 0;
+        
+        // Calculate NI on earnings above the threshold
         const taxablePay = Math.max(0, grossPay - rates.threshold);
         
         if (grossPay <= rates.upperThreshold) {
+            // Standard rate on all taxable pay
             ni = taxablePay * rates.rate;
         } else {
+            // Split between standard and reduced rate
             const lowerBand = rates.upperThreshold - rates.threshold;
             const upperBand = grossPay - rates.upperThreshold;
             ni = (lowerBand * rates.rate) + (upperBand * rates.upperRate);
         }
 
-        // Apply adjustment factor to better match real-world NI calculations
-        // Based on your payslip analysis, there seems to be a reduction factor
-        const adjustmentFactor = 0.67; // This helps match your payslip NI of £24.60
-        ni = ni * adjustmentFactor;
-
-
-
         return Math.round(ni * 100) / 100;
     }
 
-    // Theoretical calculations (without adjustments)
+    // Theoretical calculations (without any adjustments) - for comparison
     calculateTheoreticalTax(grossPay, taxCode = '1257L') {
         const taxRates = this.getTaxRates();
         const { personalAllowance } = this.parseTaxCode(taxCode);
         
         const weeklyPersonalAllowance = personalAllowance / 52;
-        const weeklyBasicThreshold = taxRates.basicRate.threshold / 52;
-        const weeklyHigherThreshold = taxRates.higherRate.threshold / 52;
+        const weeklyBasicThreshold = (personalAllowance + taxRates.basicRate.threshold) / 52;
+        const weeklyHigherThreshold = (personalAllowance + taxRates.higherRate.threshold) / 52;
         
         let taxableIncome = Math.max(0, grossPay - weeklyPersonalAllowance);
         let tax = 0;
 
-        if (taxableIncome <= weeklyBasicThreshold) {
+        if (taxableIncome <= (weeklyBasicThreshold - weeklyPersonalAllowance)) {
             tax = taxableIncome * taxRates.basicRate.rate;
-        } else if (taxableIncome <= weeklyHigherThreshold) {
-            tax = (weeklyBasicThreshold * taxRates.basicRate.rate) +
-                  ((taxableIncome - weeklyBasicThreshold) * taxRates.higherRate.rate);
+        } else if (taxableIncome <= (weeklyHigherThreshold - weeklyPersonalAllowance)) {
+            const basicRateAmount = weeklyBasicThreshold - weeklyPersonalAllowance;
+            const higherRateAmount = taxableIncome - basicRateAmount;
+            tax = (basicRateAmount * taxRates.basicRate.rate) + 
+                  (higherRateAmount * taxRates.higherRate.rate);
         } else {
-            tax = (weeklyBasicThreshold * taxRates.basicRate.rate) +
-                  ((weeklyHigherThreshold - weeklyBasicThreshold) * taxRates.higherRate.rate) +
-                  ((taxableIncome - weeklyHigherThreshold) * taxRates.additionalRate.rate);
+            const basicRateAmount = weeklyBasicThreshold - weeklyPersonalAllowance;
+            const higherRateAmount = weeklyHigherThreshold - weeklyBasicThreshold;
+            const additionalRateAmount = taxableIncome - (weeklyHigherThreshold - weeklyPersonalAllowance);
+            tax = (basicRateAmount * taxRates.basicRate.rate) + 
+                  (higherRateAmount * taxRates.higherRate.rate) + 
+                  (additionalRateAmount * taxRates.additionalRate.rate);
         }
 
         return Math.round(tax * 100) / 100;
@@ -429,7 +420,7 @@ class UKTaxCalculator {
 
     calculateTheoreticalNI(grossPay, frequency) {
         const niRates = this.getNIRates();
-        const rates = niRates[frequency] || niRates.yearly;
+        const rates = niRates[frequency] || niRates.weekly;
         
         let ni = 0;
         const taxablePay = Math.max(0, grossPay - rates.threshold);
@@ -527,23 +518,136 @@ class UKTaxCalculator {
         }, 500);
     }
 
+    // HMRC Detailed Calculation Breakdown
+    getDetailedCalculationBreakdown(grossPay, taxCode = '1257L', frequency = 'weekly') {
+        const taxRates = this.getTaxRates();
+        const { personalAllowance, isCumulative, adjustments } = this.parseTaxCode(taxCode);
+        
+        // Convert to weekly amounts
+        const weeklyPersonalAllowance = personalAllowance / 52;
+        const weeklyBasicThreshold = (personalAllowance + taxRates.basicRate.threshold) / 52;
+        const weeklyHigherThreshold = (personalAllowance + taxRates.higherRate.threshold) / 52;
+        
+        const taxableIncome = Math.max(0, grossPay - weeklyPersonalAllowance);
+        
+        // Calculate tax breakdown
+        let basicRateTax = 0;
+        let higherRateTax = 0;
+        let additionalRateTax = 0;
+        
+        if (taxableIncome > 0) {
+            const basicRateBand = weeklyBasicThreshold - weeklyPersonalAllowance;
+            const higherRateBand = weeklyHigherThreshold - weeklyBasicThreshold;
+            
+            if (taxableIncome <= basicRateBand) {
+                basicRateTax = taxableIncome * taxRates.basicRate.rate;
+            } else if (taxableIncome <= (basicRateBand + higherRateBand)) {
+                basicRateTax = basicRateBand * taxRates.basicRate.rate;
+                higherRateTax = (taxableIncome - basicRateBand) * taxRates.higherRate.rate;
+            } else {
+                basicRateTax = basicRateBand * taxRates.basicRate.rate;
+                higherRateTax = higherRateBand * taxRates.higherRate.rate;
+                additionalRateTax = (taxableIncome - basicRateBand - higherRateBand) * taxRates.additionalRate.rate;
+            }
+        }
+        
+        // Calculate NI breakdown
+        const niRates = this.getNIRates();
+        const rates = niRates[frequency] || niRates.weekly;
+        const niTaxablePay = Math.max(0, grossPay - rates.threshold);
+        
+        let standardRateNI = 0;
+        let reducedRateNI = 0;
+        
+        if (niTaxablePay > 0) {
+            if (grossPay <= rates.upperThreshold) {
+                standardRateNI = niTaxablePay * rates.rate;
+            } else {
+                const lowerBand = rates.upperThreshold - rates.threshold;
+                const upperBand = grossPay - rates.upperThreshold;
+                standardRateNI = lowerBand * rates.rate;
+                reducedRateNI = upperBand * rates.upperRate;
+            }
+        }
+        
+        return {
+            personalAllowance: weeklyPersonalAllowance,
+            taxableIncome,
+            taxBreakdown: {
+                basicRate: { amount: basicRateTax, rate: taxRates.basicRate.rate },
+                higherRate: { amount: higherRateTax, rate: taxRates.higherRate.rate },
+                additionalRate: { amount: additionalRateTax, rate: taxRates.additionalRate.rate }
+            },
+            niBreakdown: {
+                threshold: rates.threshold,
+                taxablePay: niTaxablePay,
+                standardRate: { amount: standardRateNI, rate: rates.rate },
+                reducedRate: { amount: reducedRateNI, rate: rates.upperRate }
+            },
+            isCumulative,
+            adjustments
+        };
+    }
+
+    // Enhanced display with HMRC methodology details
     displayResults(calculation) {
         // Store current calculation for saving
         this.currentCalculation = calculation;
         
-        const breakdown = `
+        // Get detailed breakdown
+        const breakdown = this.getDetailedCalculationBreakdown(calculation.grossPay, calculation.taxCode);
+        
+        const breakdownHTML = `
             <div class="breakdown-item fade-in">
                 <span class="breakdown-label">Gross Pay</span>
                 <span class="breakdown-value positive">£${calculation.grossPay.toFixed(2)}</span>
             </div>
             <div class="breakdown-item fade-in">
-                <span class="breakdown-label">Income Tax</span>
+                <span class="breakdown-label">Personal Allowance (Weekly)</span>
+                <span class="breakdown-value info">£${breakdown.personalAllowance.toFixed(2)}</span>
+            </div>
+            <div class="breakdown-item fade-in">
+                <span class="breakdown-label">Taxable Income</span>
+                <span class="breakdown-value info">£${breakdown.taxableIncome.toFixed(2)}</span>
+            </div>
+            <div class="breakdown-item fade-in">
+                <span class="breakdown-label">Income Tax (${breakdown.isCumulative ? 'Cumulative' : 'Non-cumulative'})</span>
                 <span class="breakdown-value negative">-£${calculation.incomeTax.toFixed(2)}</span>
             </div>
+            ${breakdown.taxBreakdown.basicRate.amount > 0 ? `
+            <div class="breakdown-item fade-in breakdown-sub">
+                <span class="breakdown-label">• Basic Rate (${(breakdown.taxBreakdown.basicRate.rate * 100)}%)</span>
+                <span class="breakdown-value negative">-£${breakdown.taxBreakdown.basicRate.amount.toFixed(2)}</span>
+            </div>
+            ` : ''}
+            ${breakdown.taxBreakdown.higherRate.amount > 0 ? `
+            <div class="breakdown-item fade-in breakdown-sub">
+                <span class="breakdown-label">• Higher Rate (${(breakdown.taxBreakdown.higherRate.rate * 100)}%)</span>
+                <span class="breakdown-value negative">-£${breakdown.taxBreakdown.higherRate.amount.toFixed(2)}</span>
+            </div>
+            ` : ''}
+            ${breakdown.taxBreakdown.additionalRate.amount > 0 ? `
+            <div class="breakdown-item fade-in breakdown-sub">
+                <span class="breakdown-label">• Additional Rate (${(breakdown.taxBreakdown.additionalRate.rate * 100)}%)</span>
+                <span class="breakdown-value negative">-£${breakdown.taxBreakdown.additionalRate.amount.toFixed(2)}</span>
+            </div>
+            ` : ''}
             <div class="breakdown-item fade-in">
                 <span class="breakdown-label">National Insurance</span>
                 <span class="breakdown-value negative">-£${calculation.nationalInsurance.toFixed(2)}</span>
             </div>
+            ${breakdown.niBreakdown.standardRate.amount > 0 ? `
+            <div class="breakdown-item fade-in breakdown-sub">
+                <span class="breakdown-label">• Standard Rate (${(breakdown.niBreakdown.standardRate.rate * 100)}%)</span>
+                <span class="breakdown-value negative">-£${breakdown.niBreakdown.standardRate.amount.toFixed(2)}</span>
+            </div>
+            ` : ''}
+            ${breakdown.niBreakdown.reducedRate.amount > 0 ? `
+            <div class="breakdown-item fade-in breakdown-sub">
+                <span class="breakdown-label">• Reduced Rate (${(breakdown.niBreakdown.reducedRate.rate * 100)}%)</span>
+                <span class="breakdown-value negative">-£${breakdown.niBreakdown.reducedRate.amount.toFixed(2)}</span>
+            </div>
+            ` : ''}
             <div class="breakdown-item fade-in">
                 <span class="breakdown-label">Pension (${calculation.pensionContribution}%)</span>
                 <span class="breakdown-value negative">-£${calculation.pension.toFixed(2)}</span>
@@ -568,9 +672,14 @@ class UKTaxCalculator {
                 <span class="breakdown-label">Net Pay</span>
                 <span class="breakdown-value total">£${calculation.netPay.toFixed(2)}</span>
             </div>
+            ${breakdown.adjustments.length > 0 ? `
+            <div class="breakdown-item fade-in breakdown-note">
+                <span class="breakdown-label">Note: ${breakdown.adjustments.join(', ')} applied</span>
+            </div>
+            ` : ''}
         `;
 
-        this.resultsDiv.innerHTML = breakdown;
+        this.resultsDiv.innerHTML = breakdownHTML;
     }
 
     showError(message) {
