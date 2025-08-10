@@ -612,56 +612,56 @@ class UKTaxCalculator {
             </div>
             <div class="breakdown-item fade-in">
                 <span class="breakdown-label">Income Tax (${breakdown.isCumulative ? 'Cumulative' : 'Non-cumulative'})</span>
-                <span class="breakdown-value negative">-£${calculation.incomeTax.toFixed(2)}</span>
+                <span class="breakdown-value tax">-£${calculation.incomeTax.toFixed(2)}</span>
             </div>
             ${breakdown.taxBreakdown.basicRate.amount > 0 ? `
             <div class="breakdown-item fade-in breakdown-sub">
                 <span class="breakdown-label">• Basic Rate (${(breakdown.taxBreakdown.basicRate.rate * 100)}%)</span>
-                <span class="breakdown-value negative">-£${breakdown.taxBreakdown.basicRate.amount.toFixed(2)}</span>
+                <span class="breakdown-value tax">-£${breakdown.taxBreakdown.basicRate.amount.toFixed(2)}</span>
             </div>
             ` : ''}
             ${breakdown.taxBreakdown.higherRate.amount > 0 ? `
             <div class="breakdown-item fade-in breakdown-sub">
                 <span class="breakdown-label">• Higher Rate (${(breakdown.taxBreakdown.higherRate.rate * 100)}%)</span>
-                <span class="breakdown-value negative">-£${breakdown.taxBreakdown.higherRate.amount.toFixed(2)}</span>
+                <span class="breakdown-value tax">-£${breakdown.taxBreakdown.higherRate.amount.toFixed(2)}</span>
             </div>
             ` : ''}
             ${breakdown.taxBreakdown.additionalRate.amount > 0 ? `
             <div class="breakdown-item fade-in breakdown-sub">
                 <span class="breakdown-label">• Additional Rate (${(breakdown.taxBreakdown.additionalRate.rate * 100)}%)</span>
-                <span class="breakdown-value negative">-£${breakdown.taxBreakdown.additionalRate.amount.toFixed(2)}</span>
+                <span class="breakdown-value tax">-£${breakdown.taxBreakdown.additionalRate.amount.toFixed(2)}</span>
             </div>
             ` : ''}
             <div class="breakdown-item fade-in">
                 <span class="breakdown-label">National Insurance</span>
-                <span class="breakdown-value negative">-£${calculation.nationalInsurance.toFixed(2)}</span>
+                <span class="breakdown-value ni">-£${calculation.nationalInsurance.toFixed(2)}</span>
             </div>
             ${breakdown.niBreakdown.standardRate.amount > 0 ? `
             <div class="breakdown-item fade-in breakdown-sub">
                 <span class="breakdown-label">• Standard Rate (${(breakdown.niBreakdown.standardRate.rate * 100)}%)</span>
-                <span class="breakdown-value negative">-£${breakdown.niBreakdown.standardRate.amount.toFixed(2)}</span>
+                <span class="breakdown-value ni">-£${breakdown.niBreakdown.standardRate.amount.toFixed(2)}</span>
             </div>
             ` : ''}
             ${breakdown.niBreakdown.reducedRate.amount > 0 ? `
             <div class="breakdown-item fade-in breakdown-sub">
                 <span class="breakdown-label">• Reduced Rate (${(breakdown.niBreakdown.reducedRate.rate * 100)}%)</span>
-                <span class="breakdown-value negative">-£${breakdown.niBreakdown.reducedRate.amount.toFixed(2)}</span>
+                <span class="breakdown-value ni">-£${breakdown.niBreakdown.reducedRate.amount.toFixed(2)}</span>
             </div>
             ` : ''}
             <div class="breakdown-item fade-in">
                 <span class="breakdown-label">Pension (${calculation.pensionContribution}%)</span>
-                <span class="breakdown-value negative">-£${calculation.pension.toFixed(2)}</span>
+                <span class="breakdown-value pension">-£${calculation.pension.toFixed(2)}</span>
             </div>
             ${calculation.childSupport > 0 ? `
             <div class="breakdown-item fade-in">
                 <span class="breakdown-label">Child Support</span>
-                <span class="breakdown-value negative">-£${calculation.childSupport.toFixed(2)}</span>
+                <span class="breakdown-value child-support">-£${calculation.childSupport.toFixed(2)}</span>
             </div>
             ` : ''}
             ${calculation.otherDeductions > 0 ? `
             <div class="breakdown-item fade-in">
                 <span class="breakdown-label">Other Deductions</span>
-                <span class="breakdown-value negative">-£${calculation.otherDeductions.toFixed(2)}</span>
+                <span class="breakdown-value other-deductions">-£${calculation.otherDeductions.toFixed(2)}</span>
             </div>
             ` : ''}
             <div class="breakdown-item fade-in">

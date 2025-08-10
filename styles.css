@@ -400,7 +400,7 @@ body {
     font-size: 1rem;
 }
 
-/* Breakdown Results */
+/* Breakdown Results with Unique Colors */
 .breakdown-item {
     display: flex;
     justify-content: space-between;
@@ -429,20 +429,41 @@ body {
 }
 
 .breakdown-value.positive {
-    color: #10b981;
+    color: #10b981; /* Green for income */
 }
 
 .breakdown-value.negative {
-    color: #ef4444;
+    color: #ef4444; /* Red for deductions */
 }
 
 .breakdown-value.total {
-    color: #8b5cf6;
+    color: #8b5cf6; /* Purple for total */
     font-size: 1.2rem;
 }
 
+/* Unique colors for each deduction type */
+.breakdown-value.tax {
+    color: #dc2626; /* Dark red for income tax */
+}
+
+.breakdown-value.ni {
+    color: #ea580c; /* Orange for National Insurance */
+}
+
+.breakdown-value.pension {
+    color: #7c3aed; /* Purple for pension */
+}
+
+.breakdown-value.child-support {
+    color: #be185d; /* Pink for child support */
+}
+
+.breakdown-value.other-deductions {
+    color: #b91c1c; /* Dark red for other deductions */
+}
+
 .breakdown-value.info {
-    color: #60a5fa;
+    color: #60a5fa; /* Blue for informational values */
 }
 
 .breakdown-sub {
@@ -458,6 +479,15 @@ body {
 
 .breakdown-sub .breakdown-value {
     font-weight: 500;
+}
+
+/* Sub-item colors matching their parent categories */
+.breakdown-sub .breakdown-value.tax {
+    color: #dc2626;
+}
+
+.breakdown-sub .breakdown-value.ni {
+    color: #ea580c;
 }
 
 .breakdown-note {
